@@ -1,8 +1,8 @@
 package main
 
-import "luxe"
+import "github.com/navneetshukl/luxe"
 
 func main() {
-	luxxer:=luxe.New()
+	luxxer := luxe.New()
 	luxxer.Run()
 }
