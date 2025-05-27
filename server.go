@@ -1,7 +1,10 @@
 package luxe
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
+	"log"
 	"net"
 	"time"
 )
@@ -58,29 +61,73 @@ func (l *Luxe) Run() {
 }
 
 func (l *Luxe) handleConnection(conn net.Conn) {
-	defer conn.Close()
+    defer func(conn net.Conn) {
+        err := conn.Close()
+        if err != nil {
+            l.logger.Error("Error in closing the connection: %v", err)
+        }
+    }(conn)
+    
+    conn.SetReadDeadline(time.Now().Add(l.Server.ReadTimeout))
+    req, err := readRequest(conn, l.Server.MaxRequestBodySize)
+	log.Println("Request is ",req)
+	log.Println("*******************************************************")
+    if err != nil {
+        if errors.Is(err, errReadMaxSize) {
+            // Send 413 Payload Too Large response
+            response := "HTTP/1.1 413 Payload Too Large\r\n" +
+                "Content-Type: text/plain\r\n" +
+                "Content-Length: 19\r\n" +
+                "Connection: close\r\n" +
+                "\r\n" +
+                "Request too large"
+            conn.Write([]byte(response))
+            return
+        }
+        l.logger.Error("Error in reading the request: %v", err)
+        return
+    }
+    
+    l.logger.Info("Received request:\n%s", req)
+    
+    // Send proper HTTP response
+    response := "HTTP/1.1 200 OK\r\n" +
+        "Content-Type: text/plain\r\n" +
+        "Content-Length: 13\r\n" +
+        "Connection: close\r\n" +
+        "\r\n" +
+        "Hello, World!"
+    
+    _, err = conn.Write([]byte(response))
+    if err != nil {
+        l.logger.Error("Error writing response: %v", err)
+    }
+}
 
-	conn.SetReadDeadline(time.Now().Add(l.Server.ReadTimeout))
-
+// readRequest will read the data from connection
+func readRequest(conn net.Conn, maxRequestBodySize int64) (string, error) {
+	data := make([]byte, 0)
 	buffer := make([]byte, 4096)
-	n, err := conn.Read(buffer)
-	if err != nil {
-		l.logger.Error("Error reading request: %v", err)
-		return
+
+	if maxRequestBodySize <= 0 {
+		maxRequestBodySize = 1024 * 1024 // 1MB default
 	}
 
-	requestData := string(buffer[:n])
-	l.logger.Info("Received request:\n%s", requestData)
-
-	response := "HTTP/1.1 200 OK\r\n" +
-		"Content-Type: text/plain\r\n" +
-		"Content-Length: 13\r\n" +
-		"Connection: close\r\n" +
-		"\r\n" +
-		"Hello, World!"
-
-	_, err = conn.Write([]byte(response))
-	if err != nil {
-		l.logger.Error("Error writing response: %v", err)
+	for {
+		n, err := conn.Read(buffer)
+		if err != nil {
+			if err.Error() == "EOF" && len(data) > 0 {
+				break
+			}
+			return "", err
+		}
+		data = append(data, buffer[:n]...)
+		if bytes.Contains(data, []byte("\r\n\r\n")) {
+			break
+		}
+		if int64(len(data)) > maxRequestBodySize {
+			return "", errReadMaxSize
+		}
 	}
+	return string(data), nil
 }
