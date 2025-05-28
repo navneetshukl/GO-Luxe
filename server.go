@@ -2,6 +2,7 @@ package luxe
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -61,47 +62,65 @@ func (l *Luxe) Run() {
 }
 
 func (l *Luxe) handleConnection(conn net.Conn) {
-    defer func(conn net.Conn) {
-        err := conn.Close()
-        if err != nil {
-            l.logger.Error("Error in closing the connection: %v", err)
-        }
-    }(conn)
-    
-    conn.SetReadDeadline(time.Now().Add(l.Server.ReadTimeout))
-    req, err := readRequest(conn, l.Server.MaxRequestBodySize)
-	log.Println("Request is ",req)
+	defer func(conn net.Conn) {
+		err := conn.Close()
+		if err != nil {
+			l.logger.Error("Error in closing the connection: %v", err)
+		}
+	}(conn)
+
+	conn.SetReadDeadline(time.Now().Add(l.Server.ReadTimeout))
+	req, err := readRequest(conn, l.Server.MaxRequestBodySize)
+	log.Println("Request is ", req)
 	log.Println("*******************************************************")
-    if err != nil {
-        if errors.Is(err, errReadMaxSize) {
-            // Send 413 Payload Too Large response
-            response := "HTTP/1.1 413 Payload Too Large\r\n" +
-                "Content-Type: text/plain\r\n" +
-                "Content-Length: 19\r\n" +
-                "Connection: close\r\n" +
-                "\r\n" +
-                "Request too large"
-            conn.Write([]byte(response))
-            return
-        }
-        l.logger.Error("Error in reading the request: %v", err)
-        return
-    }
-    
-    l.logger.Info("Received request:\n%s", req)
-    
-    // Send proper HTTP response
-    response := "HTTP/1.1 200 OK\r\n" +
-        "Content-Type: text/plain\r\n" +
-        "Content-Length: 13\r\n" +
-        "Connection: close\r\n" +
-        "\r\n" +
-        "Hello, World!"
-    
-    _, err = conn.Write([]byte(response))
-    if err != nil {
-        l.logger.Error("Error writing response: %v", err)
-    }
+	if err != nil {
+		if errors.Is(err, errReadMaxSize) {
+			// Send 413 Payload Too Large response
+			response := "HTTP/1.1 413 Payload Too Large\r\n" +
+				"Content-Type: text/plain\r\n" +
+				"Content-Length: 19\r\n" +
+				"Connection: close\r\n" +
+				"\r\n" +
+				"Request too large"
+			conn.Write([]byte(response))
+			return
+		}
+		l.logger.Error("Error in reading the request: %v", err)
+		return
+	}
+
+	// Create context
+	ctx := NewLTX(conn, l)
+
+	//Parse the request to proper structure
+
+	err = ctx.ParseRequest(req)
+	if err != nil {
+		l.logger.Error("Error parsing request: %v", err)
+		return
+	}
+
+	l.logger.Info("Received %s request to %s", ctx.GetMethod(), ctx.GetPath())
+
+	str,_:=json.Marshal(ctx)
+	body:=string(ctx.Request.Body)
+
+	log.Println("Body is ",body)
+
+	log.Println("LTX is ",string(str))
+
+	// Send proper HTTP response
+	response := "HTTP/1.1 200 OK\r\n" +
+		"Content-Type: text/plain\r\n" +
+		"Content-Length: 13\r\n" +
+		"Connection: close\r\n" +
+		"\r\n" +
+		"Hello, World!"
+
+	_, err = conn.Write([]byte(response))
+	if err != nil {
+		l.logger.Error("Error writing response: %v", err)
+	}
 }
 
 // readRequest will read the data from connection

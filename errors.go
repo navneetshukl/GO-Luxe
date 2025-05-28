@@ -3,5 +3,6 @@ package luxe
 import "errors"
 
 var (
-	errReadMaxSize = errors.New("request size exceeds maximum allowed")
+	errReadMaxSize error = errors.New("request size exceeds maximum allowed")
+	errInvalidRequest error=errors.New("invalid request")
 )
