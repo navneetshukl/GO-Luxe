@@ -40,3 +40,14 @@ func (c *LTX) GetBody() []byte {
 func (c *LTX) GetBodyString() string {
 	return string(c.Request.Body)
 }
+
+// SetData set the data for use between handlers
+func(c *LTX) SetData(key string,val interface{}){
+	c.dataStore[key]=val
+}
+
+// Get retrieves data as interface{}
+func (c *LTX) GetData(key string) (interface{}, bool) {
+    val, exists := c.dataStore[key]
+    return val, exists
+}

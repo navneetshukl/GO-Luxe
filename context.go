@@ -7,6 +7,7 @@ import (
 
 // LTX represents the context of HTTP request
 type LTX struct {
+	dataStore map[string]interface{}
 	conn     net.Conn
 	Request  *Request
 	Response *Response
@@ -34,6 +35,7 @@ type Response struct {
 func NewLTX(conn net.Conn, luxe *Luxe) *LTX {
 	return &LTX{
 		conn: conn,
+		dataStore: make(map[string]interface{}),
 		Request: &Request{
 			Headers: make(map[string]string),
 			Query:   make(url.Values),
