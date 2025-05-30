@@ -51,3 +51,8 @@ func (c *LTX) GetData(key string) (interface{}, bool) {
     val, exists := c.dataStore[key]
     return val, exists
 }
+
+// DeleteKey delete key from datastore
+func(c *LTX) DeleteKey(key string){
+	delete(c.dataStore,key)
+}

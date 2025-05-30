@@ -2,7 +2,8 @@ package luxe
 
 import (
 	"encoding/json"
-	"fmt"
+	"os"
+	"strconv"
 )
 
 // SetStatusCode set response status code
@@ -18,8 +19,9 @@ func (l *LTX) SetHeader(key, val string) *LTX {
 }
 
 // SendString method to send response back in string
-func (l *LTX) SendString(data string) error {
+func (l *LTX) SendString(code int, data string) error {
 	l.Response.Body = []byte(data)
+	l.Response.StatusCode = code
 	if l.Request.Headers["Content-Type"] == "" {
 		l.SetHeader("Content-Type", "text/plain")
 	}
@@ -27,51 +29,74 @@ func (l *LTX) SendString(data string) error {
 }
 
 // SendBytes method send response back in bytes
-func (l *LTX) SendBytes(data []byte) error {
+func (l *LTX) SendBytes(code int, data []byte) error {
 	l.Response.Body = data
+	l.Response.StatusCode = code
 	if l.Request.Headers["Content-Type"] == "" {
 		l.SetHeader("Content-Type", "application/octet-stream")
 	}
 	return l.writeResponse()
 }
 
-func(l *LTX)SendJSON(data interface{})error{
-	jsonData,err:=json.Marshal(data)
-	if err!=nil{
-		return err
+func (l *LTX) SendJSON(code int, data interface{}) error {
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		l.sendError(500,"something went wrong")
 	}
 
-	l.Response.Body=jsonData
-	l.SetHeader("Content-Type","application/json")
+	// Set response data
+	l.Response.StatusCode = code
+	l.Response.Headers["Content-Type"] = "application/json; charset=utf-8"
+	l.Response.Headers["Content-Length"] = strconv.Itoa(len(jsonData))
+	l.Response.Body = jsonData
+
+	// Write response
 	return l.writeResponse()
+}
+
+// SendHTML parse html file
+func (l *LTX) SendHTML(code int, fileName string) error {
+	data, err := os.ReadFile(fileName)
+	if err != nil {
+		l.sendError(500, "something went wrong")
+	}
+	l.Response.StatusCode = code
+	l.Response.Body = data
+	l.Response.Headers["Content-Type"] = "text/html; charset=utf-8"
+	l.Response.Headers["Content-Length"] = strconv.Itoa(len(data))
+	return l.writeResponse()
+
 }
 
 // writeResponse method to write the response back
 func (l *LTX) writeResponse() error {
 
-	statusStr := getStatusText(l.Response.StatusCode)
-	response := fmt.Sprintf("HTTP/1.1 %d %s\r\n", l.Response.StatusCode, statusStr)
+	statusText := getStatusText(l.Response.StatusCode)
+	statusLine := "HTTP/1.1 " + strconv.Itoa(l.Response.StatusCode) + " " + statusText + "\r\n"
+	l.conn.Write([]byte(statusLine))
 
-	// add headers
+	// Write headers
 	for key, value := range l.Response.Headers {
-		response += fmt.Sprintf("%s: %s\r\n", key, value)
+		headerLine := key + ": " + value + "\r\n"
+		l.conn.Write([]byte(headerLine))
 	}
 
-	// add Content-Length
-	response += fmt.Sprintf("Content-Length: %d\r\n", len(l.Response.Body))
-	response += "Connection: close\r\n"
-	response += "\r\n"
+	// End headers
+	l.conn.Write([]byte("\r\n"))
 
-	// write response
-	_, err := l.conn.Write([]byte(response))
-	if err != nil {
-		return err
-	}
-
-	// write body
+	// Write body
 	if len(l.Response.Body) > 0 {
-		_, err = l.conn.Write(l.Response.Body)
+		l.conn.Write(l.Response.Body)
 	}
 
-	return err
+	return nil
+}
+
+// sendError handle internal error
+func (l *LTX) sendError(code int, message string) error {
+	l.Response.StatusCode = code
+	l.Response.Headers["Content-Type"] = "text/plain; charset=utf-8"
+	l.Response.Body = []byte(message)
+	l.Response.Headers["Content-Length"] = strconv.Itoa(len(message))
+	return l.writeResponse()
 }
