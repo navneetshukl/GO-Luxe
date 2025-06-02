@@ -13,6 +13,7 @@ import (
 type Luxe struct {
 	Server Server
 	logger *Logger
+	router *Router
 }
 
 type Server struct {
@@ -35,6 +36,7 @@ func New() Luxe {
 	return Luxe{
 		Server: defaultServer,
 		logger: NewLogger(),
+		router: NewRouter(),
 	}
 }
 
