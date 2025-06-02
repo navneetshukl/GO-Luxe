@@ -1,6 +1,6 @@
 # Luxe
 
-A simple HTTP server framework written in Go.
+A Simple HTTP server framework written in Go.
 
 ## Features
 
