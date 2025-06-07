@@ -17,3 +17,24 @@ const (
 func (m HTTPMethod) ToString() string {
 	return string(m)
 }
+
+type HTTPStatus string
+
+const (
+	STATUSINTERNALSERVERERROR HTTPMethod = "Internal Server Error"
+	STATUSOK                  HTTPMethod = "Status OK"
+)
+
+func (m HTTPStatus) ToString() string {
+	return string(m)
+}
+
+type Error string
+
+const (
+	JSONEncoding Error = "json encoding error"
+)
+
+func (e Error) ToString() string {
+	return string(e)
+}

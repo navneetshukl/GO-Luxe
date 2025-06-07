@@ -78,13 +78,12 @@ func (l *Luxe) handleConnection(conn net.Conn) {
 	if err != nil {
 		if errors.Is(err, errReadMaxSize) {
 			// Send 413 Payload Too Large response
-			response := "HTTP/1.1 413 Payload Too Large\r\n" +
-				"Content-Type: text/plain\r\n" +
-				"Content-Length: 19\r\n" +
-				"Connection: close\r\n" +
-				"\r\n" +
-				"Request too large"
-			conn.Write([]byte(response))
+			response := NewHTTPResponse()
+			response.SetStatus(413, "Payload Too Large")
+			response.SetHeader("Content-Type", "text/plain")
+			response.SetHeader("Connection", "close")
+			response.SetTextBody("Request too large")
+			conn.Write(response.ToBytes())
 			return
 		}
 		l.logger.Error("Error in reading the request: %v", err)
@@ -104,22 +103,21 @@ func (l *Luxe) handleConnection(conn net.Conn) {
 
 	l.logger.Info("Received %s request to %s", ctx.GetMethod(), ctx.GetPath())
 
-	str,_:=json.Marshal(ctx)
-	body:=string(ctx.Request.Body)
+	str, _ := json.Marshal(ctx)
+	body := string(ctx.Request.Body)
 
-	log.Println("Body is ",body)
+	log.Println("Body is ", body)
 
-	log.Println("LTX is ",string(str))
+	log.Println("LTX is ", string(str))
 
 	// Send proper HTTP response
-	response := "HTTP/1.1 200 OK\r\n" +
-		"Content-Type: text/plain\r\n" +
-		"Content-Length: 13\r\n" +
-		"Connection: close\r\n" +
-		"\r\n" +
-		"Hello, World!"
+	response := NewHTTPResponse()
+	response.SetStatus(200, "OK")
+	response.SetHeader("Content-Type", "text/plain")
+	response.SetHeader("Connection", "close")
+	response.SetTextBody("Hello, World!")
 
-	_, err = conn.Write([]byte(response))
+	_, err = conn.Write(response.ToBytes())
 	if err != nil {
 		l.logger.Error("Error writing response: %v", err)
 	}
