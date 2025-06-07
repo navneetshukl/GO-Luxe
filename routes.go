@@ -1,5 +1,7 @@
 package luxe
 
+import "log"
+
 type Route struct {
 	Method  string
 	Path    string
@@ -49,7 +51,13 @@ func (r *Router) HandleRequest(l *LTX) {
 	method := l.GetMethod()
 	path := l.GetPath()
 
+	log.Println("Method is ",method)
+	log.Println("Path is ",path)
+
+	log.Println("r.routes is ",r.routes)
+
 	for _, route := range r.routes {
+		log.Println("Route.Method is ",route.Method)
 		if route.Method != method {
 			continue
 		}

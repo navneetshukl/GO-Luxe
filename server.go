@@ -2,7 +2,6 @@ package luxe
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -103,24 +102,24 @@ func (l *Luxe) handleConnection(conn net.Conn) {
 
 	l.logger.Info("Received %s request to %s", ctx.GetMethod(), ctx.GetPath())
 
-	str, _ := json.Marshal(ctx)
-	body := string(ctx.Request.Body)
+	fmt.Println("CTXXXXXXXXXX is ", ctx.Request.Path)
 
-	log.Println("Body is ", body)
+	router := NewRouter()
 
-	log.Println("LTX is ", string(str))
+	// handle the request
+	router.HandleRequest(ctx)
 
 	// Send proper HTTP response
-	response := NewHTTPResponse()
-	response.SetStatus(200, "OK")
-	response.SetHeader("Content-Type", "text/plain")
-	response.SetHeader("Connection", "close")
-	response.SetTextBody("Hello, World!")
+	// response := NewHTTPResponse()
+	// response.SetStatus(200, "OK")
+	// response.SetHeader("Content-Type", "text/plain")
+	// response.SetHeader("Connection", "close")
+	// response.SetTextBody("Hello, World!")
 
-	_, err = conn.Write(response.ToBytes())
-	if err != nil {
-		l.logger.Error("Error writing response: %v", err)
-	}
+	// _, err = conn.Write(response.ToBytes())
+	// if err != nil {
+	// 	l.logger.Error("Error writing response: %v", err)
+	// }
 }
 
 // readRequest will read the data from connection

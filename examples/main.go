@@ -5,12 +5,12 @@ import "github.com/navneetshukl/luxe"
 func main() {
 	luxxer := luxe.New()
 
-	luxxer.GET("/a",GET)
+	luxxer.GET("/a",GETPath)
 
 	luxxer.Run()
 }
 
-func GET(l *luxe.LTX){
+func GETPath(l *luxe.LTX){
 	jsonResp:=`{
 		"name":"Navneet",
 	}`
