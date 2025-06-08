@@ -11,6 +11,8 @@ A Simple HTTP server framework written in Go.
 
 ## Quick Start
 
+Run `go get github.com/navneetshukl/GO-Luxe@v1.0.0`
+
 ```go
 package main
 
@@ -44,12 +46,33 @@ The server will listen for HTTP connections and respond with "Hello, World!" to 
 ```go
 package main
 
-import "your-module/luxe"
+import (
+	luxe "github.com/navneetshukl/GO-Luxe"
+)
 
 func main() {
-    l := luxe.New()
-    l.Run() // Server starts on 0.0.0.0:8080
+	mux := luxe.New()
+
+	mux.GET("/a", func(l *luxe.LTX) {
+		l.SendJSON(200, luxe.H{
+			"message": "This is get method 1",
+		})
+	})
+
+	mux.GET("/b",GetB)
+
+	mux.Run()
+
 }
+
+func GetB(l *luxe.LTX) {
+	l.SendJSON(200, luxe.H{
+		"message": "This is get method 2",
+		"error":   "No Error",
+		"age":10,
+	})
+}
+
 ```
 
 ## License
