@@ -1,6 +1,6 @@
 package main
 
-import "github.com/navneetshukl/luxe"
+import luxe "github.com/navneetshukl/GO-Luxe"
 
 func main() {
 	luxxer := luxe.New()
@@ -20,4 +20,3 @@ func GETPath(l *luxe.LTX) {
 		"name": "Navneet",
 	})
 }
-
