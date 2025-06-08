@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"log"
 	"net"
 	"time"
 )
@@ -56,7 +55,7 @@ func (l *Luxe) Run() {
 			l.logger.Warn("Failed to accept connection: %v", err)
 			continue
 		}
-		l.logger.Info("Connection is: %v", conn)
+		//l.logger.Info("Connection is: %v", conn)
 
 		go l.handleConnection(conn)
 	}
@@ -72,8 +71,6 @@ func (l *Luxe) handleConnection(conn net.Conn) {
 
 	conn.SetReadDeadline(time.Now().Add(l.Server.ReadTimeout))
 	req, err := readRequest(conn, l.Server.MaxRequestBodySize)
-	log.Println("Request is ", req)
-	log.Println("*******************************************************")
 	if err != nil {
 		if errors.Is(err, errReadMaxSize) {
 			// Send 413 Payload Too Large response
@@ -102,12 +99,8 @@ func (l *Luxe) handleConnection(conn net.Conn) {
 
 	l.logger.Info("Received %s request to %s", ctx.GetMethod(), ctx.GetPath())
 
-	fmt.Println("CTXXXXXXXXXX is ", ctx.Request.Path)
-
-	router := NewRouter()
-
 	// handle the request
-	router.HandleRequest(ctx)
+	l.router.HandleRequest(ctx)
 
 	// Send proper HTTP response
 	// response := NewHTTPResponse()

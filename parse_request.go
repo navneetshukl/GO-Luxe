@@ -1,7 +1,6 @@
 package luxe
 
 import (
-	"fmt"
 	"net/url"
 	"strings"
 )
@@ -54,8 +53,6 @@ func (c *LTX) ParseRequest(reqData string) error {
 	if headerIdx >= 0 && headerIdx < len(lines)-1 {
 		bodyLines := lines[headerIdx+1:]
 		body := strings.Join(bodyLines, splitPart)
-
-		fmt.Println("Body is inside ",body)
 		c.Request.Body = []byte(body)
 	}
 	return nil
