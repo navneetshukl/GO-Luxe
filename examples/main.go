@@ -20,8 +20,9 @@ func main() {
 }
 
 func GETPath(l *luxe.LTX) {
-	fmt.Println("Path is ",l.Request.Path)
-	fmt.Println("Query is ",l.Request.Query)
+	fmt.Println("Path is ",l.Request.Query)
+	fmt.Println("AllQuery is ",l.Request.Params)
+	fmt.Println("Title is ",l.GetParam("title"))
 	l.SendJSON(200, luxe.H{
 		"name": "Navneet",
 	})
