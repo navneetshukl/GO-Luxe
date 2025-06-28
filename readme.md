@@ -8,6 +8,7 @@ A Simple HTTP server framework written in Go.
 - Built-in logging system
 - Configurable server settings (timeouts, address, port)
 - Connection handling with goroutines
+- Handling variable query params (/getname?name=navneet&age=20)
 
 ## Quick Start
 
