@@ -2,23 +2,22 @@ package luxe
 
 import (
 	"net"
-	"net/url"
 )
 
 // LTX represents the context of HTTP request
 type LTX struct {
 	dataStore map[string]interface{}
-	conn     net.Conn
-	Request  *Request
-	Response *Response
-	luxe     *Luxe
+	conn      net.Conn
+	Request   *Request
+	Response  *Response
+	luxe      *Luxe
 }
 
 // Request holds the request data for HTTP
 type Request struct {
 	Method      string
-	Path        string
-	Query       url.Values
+	Query        string
+	Params       map[string]string
 	Headers     map[string]string
 	Body        []byte
 	ContentType string
@@ -34,11 +33,11 @@ type Response struct {
 // NewLTX creates new context
 func NewLTX(conn net.Conn, luxe *Luxe) *LTX {
 	return &LTX{
-		conn: conn,
+		conn:      conn,
 		dataStore: make(map[string]interface{}),
 		Request: &Request{
 			Headers: make(map[string]string),
-			Query:   make(url.Values),
+			Params:   make(map[string]string),
 		},
 		Response: &Response{
 			StatusCode: 200,

@@ -1,7 +1,6 @@
 package luxe
 
 import (
-	"net/url"
 	"strings"
 )
 
@@ -10,19 +9,19 @@ func (c *LTX) GetMethod() string {
 	return c.Request.Method
 }
 
-// GetPath return request path
-func (c *LTX) GetPath() string {
-	return c.Request.Path
-}
-
-// GetQuery return particular query
-func (c *LTX) GetQuery(key string) string {
-	return c.Request.Query.Get(key)
-}
-
-// GetAllQueries return all query parameter
-func (c *LTX) GetAllQueries() url.Values {
+// GetQuery return request path
+func (c *LTX) GetQuery() string {
 	return c.Request.Query
+}
+
+// GetParam return particular query
+func (c *LTX) GetParam(key string) string {
+	return c.Request.Params[key]
+}
+
+// GetAllParams return all query parameter
+func (c *LTX) GetAllParams() map[string]string {
+	return c.Request.Params
 }
 
 // GetHeader return request header
@@ -42,17 +41,17 @@ func (c *LTX) GetBodyString() string {
 }
 
 // SetData set the data for use between handlers
-func(c *LTX) SetData(key string,val interface{}){
-	c.dataStore[key]=val
+func (c *LTX) SetData(key string, val interface{}) {
+	c.dataStore[key] = val
 }
 
 // Get retrieves data as interface{}
 func (c *LTX) GetData(key string) (interface{}, bool) {
-    val, exists := c.dataStore[key]
-    return val, exists
+	val, exists := c.dataStore[key]
+	return val, exists
 }
 
 // DeleteKey delete key from datastore
-func(c *LTX) DeleteKey(key string){
-	delete(c.dataStore,key)
+func (c *LTX) DeleteKey(key string) {
+	delete(c.dataStore, key)
 }

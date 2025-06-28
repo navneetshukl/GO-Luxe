@@ -1,7 +1,6 @@
 package luxe
 
 import (
-	"net/url"
 	"strings"
 )
 
@@ -22,13 +21,20 @@ func (c *LTX) ParseRequest(reqData string) error {
 	c.Request.Method = requestLine[0]
 
 	urlParts := strings.Split(requestLine[1], "?")
-	c.Request.Path = urlParts[0]
+	c.Request.Query = urlParts[0]
 
+	// handling 
 	if len(urlParts) > 1 {
-		queryParams, err := url.ParseQuery(urlParts[1])
-		if err == nil {
-			c.Request.Query = queryParams
+		queryParams := urlParts[1]
+
+		allQuery := strings.Split(queryParams, "&")
+		for _, val := range allQuery {
+			k := strings.Split(val, "=")[0]
+			v := strings.Split(val, "=")[1]
+
+			c.Request.Params[k] = v
 		}
+
 	}
 
 	headerIdx := -1

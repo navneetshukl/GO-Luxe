@@ -95,7 +95,7 @@ func (l *Luxe) handleConnection(conn net.Conn) {
 		return
 	}
 
-	l.logger.Info("Received %s request to %s", ctx.GetMethod(), ctx.GetPath())
+	l.logger.Info("Received %s request to %s", ctx.GetMethod(), ctx.GetQuery())
 
 	// handle the request
 	l.router.HandleRequest(ctx)

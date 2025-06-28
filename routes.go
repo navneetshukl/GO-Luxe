@@ -47,7 +47,7 @@ func (r *Router) PATCH(path string, handler HandlerFunc) {
 
 func (r *Router) HandleRequest(l *LTX) {
 	method := l.GetMethod()
-	path := l.GetPath()
+	path := l.GetQuery()
 
 	for _, route := range r.routes {
 		if route.Method != method {
