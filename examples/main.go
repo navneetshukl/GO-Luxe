@@ -1,6 +1,10 @@
 package main
 
-import luxe "github.com/navneetshukl/GO-Luxe"
+import (
+	"fmt"
+
+	luxe "github.com/navneetshukl/GO-Luxe"
+)
 
 func main() {
 	luxxer := luxe.New()
@@ -16,6 +20,8 @@ func main() {
 }
 
 func GETPath(l *luxe.LTX) {
+	fmt.Println("Path is ",l.Request.Path)
+	fmt.Println("Query is ",l.Request.Query)
 	l.SendJSON(200, luxe.H{
 		"name": "Navneet",
 	})

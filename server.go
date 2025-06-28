@@ -55,8 +55,6 @@ func (l *Luxe) Run() {
 			l.logger.Warn("Failed to accept connection: %v", err)
 			continue
 		}
-		//l.logger.Info("Connection is: %v", conn)
-
 		go l.handleConnection(conn)
 	}
 }
@@ -102,17 +100,6 @@ func (l *Luxe) handleConnection(conn net.Conn) {
 	// handle the request
 	l.router.HandleRequest(ctx)
 
-	// Send proper HTTP response
-	// response := NewHTTPResponse()
-	// response.SetStatus(200, "OK")
-	// response.SetHeader("Content-Type", "text/plain")
-	// response.SetHeader("Connection", "close")
-	// response.SetTextBody("Hello, World!")
-
-	// _, err = conn.Write(response.ToBytes())
-	// if err != nil {
-	// 	l.logger.Error("Error writing response: %v", err)
-	// }
 }
 
 // readRequest will read the data from connection
